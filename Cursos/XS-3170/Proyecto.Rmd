@@ -1,0 +1,158 @@
+---
+title: "Análisis - Proyecto Experimentos II"
+author: "César Gamboa S."
+date: "17 de septiembre de 2016"
+output: word_document
+---
+
+#1. Definición de la pregunta.        
+
+La parasitosis tiene un impacto importante en el desarrollo de los niños, tanto a nivel físico como cognitivo, sobre todo en los niños de edad prescolar (menores de cinco años). En Costa Rica, gracias a la última Encuesta Nacional de Nutrición (ENN, 2008-2009), se cuenta con datos de la prevalencia de esta enfermedad.     
+
+A pesar de contar con cierta información acerca de la parasitosis, existe desconocimiento de la prevalencia de esta enfermedad en poblaciones altamente vulnerables, como la de los niños beneficiarios de los programas *API* y *DAF*, pudiendo existir diferencias importantes, por ejemplo, entre cada uno de estos grupos (*API* y *DAF*), generando la posibilidad de que diferencias importantes no estén siendo detactadas por las estadísticas nacionales.        
+
+De esta manera surge la interrogante: ¿existe alguna relación entre la parasitosis y condiciones socioeconómicas de los niños? Y de ser así ¿pueden utilizarse métodos cuantitativos para identificar estas posibles relaciones?     
+
+Estas y otras preguntas relacionadas son el punto de partida de esta investigación.      
+
+#2. Definición del conjunto de datos ideal.       
+
+##2.1 Marco Muestral.        
+
+Para poder realizar el análisis es necesario un conjunto de datos adecuado, por esta razón se utilizó como marco muestral la última versión (julio 2014) de la base de datos generada por la Dirección Nacional de *CEN-CINAI* del Ministerio de Salud. Esta base de datos cuenta con información de la oficina regional a la que pertenece el centro, número de centros con servicio de *API* y *DAF* en la Región Central Sur, el nombre de los centros, el tipo de centro (*CEN* o *CINAI*), el dato del número aproximado de niños que pertenece a las modalidades de *API* y *DAF* en cada centro y la clasificación en urbano-rural obtenida del Instituto Nacional de Estadística y Censos (*INEC*) (Anexo 1, cuadro 1).     
+
+##2.2 Parámetros.       
+
+Se utilizó un muestreo de conglomerados en una sola etapa. En este caso los conglomerados o unidades primarias de muestreo son los centros que brindan el servicio de *API* y *DAF* y las unidades secundarias de muestreo corresponden a los niños.       
+
+En este tipo de muestreo se seleccionan algunos conglomerados y se muestrean todas las unidades secundarias de muestreo de ese conglomerado. Se utiliza este tipo de muestreo debido a que no se cuenta con las listas definitivas de los niños de cada centro, ya que por disposición de los encargados de los programas *API* y *DAF*, no se permite muestrear a las poblaciones de los centros de manera parcial.       
+
+Una de las ventajas del muestreo en una etapa es su facilidad para captar los niños del estudio y la menor probabilidad de pérdidas de los sujetos en comparación con otras variables (como desnutrición o anemia). Por otro lado, brinda información completa de la situación de los niños en los *CEN-CINAI* específicos y es más económico, ya que se realizan menos giras para la toma de muestras, pues la población se encuentra menos dispersa.     
+
+Se trabajó con un nivel de significancia del 95%, un error máximo permisible de 10% y una potencia de 80%. La potencia y la significancia se establecieron contemplando principalmente el factor económico, la capacidad de procesamiento de muestras por parte de los investigadores y siguiendo algunas recomendaciones mencionadas en la literatura para no afectar la calidad del estudio.     
+
+El tamaño de muestra se calculó utilizando como variable principal la parasitosis. Para efectos de estimación, se asumió una prevalencia de parasitosis del 50%. Este es un supuesto conservador, ya que lleva a la estimación del tamaño de muestra máximo. Como se ha observado en distintos estudios la prevalencia de parasitosis, esta puede variar de manera importante dependiendo de la población, habiendo casos en los que los niveles se encuentran alrededor de 2-3% y en otros casos se encuentran cercanos al 90% (Hernández & Matamoros, 2005; Reyes, 1987).      
+
+La estimación de la muestra se realizó asumiendo una pérdida de un 50% de los casos.       
+
+##2.3 Fórmula empleada para el tamaño de muestra.       
+
+Se realizó un cálculo de tamaño de muestra para proporciones y diferencia entre proporciones.      
+
+La variable de exposición principal seleccionada fue parasitosis, ya que es aquella en la que se espera encontrar mayor variabilidad y mayor pérdida de sujetos. Existen dos formas de hacer el cálculo de muestra para la estimación de proporciones, una es obtener el número de conglomerados que se deben muestrear, seleccionarlos y de esta manera determinar el número de unidades secundarias de muestreo. Otra forma es determinar el número de unidades secundarias de muestreo que se deben incluir en el estudio y distribuirlas entre los conglomerados (Camacho, 2008; Magnani, 2001). Para efectos de este estudio se decidió calcular el tamaño de la muestra partiendo del número de conglomerados.      
+
+###2.3.1 Tamaño para calcular diferencias entre proporciones, partiendo del número de conglomerados.        
+
+Inicialmente se hizo una estimación del número de conglomerados a muestrear. Estos conglomerados son de distinto tamaño y se seleccionan de manera aleatoria simple o aleatoria sistemática.         
+ 
+Para el cálculo del número de conglomerados ($n$) se utilizaron las siguientes fórmulas:        
+
+$$\hat p_e=\frac{\sum_{i=1}^n a_i}{\sum_{i=1}^n m_i}$$      
+
+$$n=\frac{Ns_a^2}{\frac{N\delta^2\bar{M}^2}{Z^2}}+s_a^2$$       
+
+$$s_a^2=\frac{\sum_{i=1}^n \left(a_i-p_em_i\right)^2}{n-1}$$
+
+Para calcular la varianza del total $\left(S_a^2\right)$, se utilizaron los resultados del análisis de distintos parásitos en las heces de 500 niños de 12 guarderías del Gran Área Metropolitana (Reyes et al., 1987), estudios más recientes realizados en pequeñas poblaciones de niños de zonas aborígenes y urbano populares en Costa Rica han mostrado resultados similares a los encontrados en 1987.      
+
+Los parámetros se encuentran definidos de la siguiente manera:      
+
+*   $a_i$: Recibió el valor de 1 en los niños que presentaron 1 o más parásitos y adquirió el valor 0 en niños que no presentaron parásitos, en el estudio de Reyes,1987.        
+
+*   $s_a^2=44,73$: Varianza promedio obtenida para proporción de niños con parásitos, en el estudio de Reyes, 1987.        
+
+*   $n=12$: En la fórmula de $s_a^2$ representa las guarderías que se utilizaron en el estudio de Reyes.      
+
+*   $N=36$: Número de *API* y *DAF* de la Región Central Sur que cumplen los criterios de inclusión.     
+
+*   $\delta=0,1$: Error máximo de 10% fijado para el estudio de *API* y *DAF*.      
+
+*   $\bar{M}=71,94$: Tamaño promedio del conglomerado para los *API*.      
+
+*   $\bar{M}=27,61$: Tamaño promedio del conglomerado para los *DAF*.       
+
+Utilizando los parámetros definidos anteriormente, se determinó que se deben muestrear tres conglomerados de *API* y 15 de *DAF*, sin embargo, se definió previamente que se muestrean de manera simultánea *API* y *DAF* por lo que se muestrearían 15 *API* y *DAF*.      
+
+A pesar de que muestrear 15 centros de beneficiarios de *API* implica un incremento considerable en el costo del estudio, la autorización y el apoyo de Ministerio de Salud para esta investigación dependía de que se aceptara la condición de muestrear la totalidad de los centros y no únicamente los programas de *DAF*, por lo que no existía la posibilidad de realizar un muestreo parcial.        
+
+###2.3.2 Distribución de los API y DAF a muestrear.     
+
+Los centros (*CEN* o *CINAI*) están clasificados en oficinas regionales según su cercanía. La distribución de los 15 centros a muestrear se realizó de manera proporcional a la cantidad de centros por oficina regional  (anexo 1, cuadro 2).      
+
+Los centros a muestrear dentro de cada oficina fueron seleccionados de manera aleatoria (anexo 1, cuadro 1).       
+
+Como se mencionó anteriormente también se puede realizar una distribución de centros con una probabilidad proporcional al tamaño (Magnani, 2001), en este diseño los centros seleccionados para API son distintos que los seleccionados para *DAF*, debido a las diferencias de tamaños. Ya que parte de las restricciones del estudio es que los centros seleccionados deben ser muestreados en su totalidad (incluyendo niños de *API* y *DAF*) no es posible utilizar este modelo de muestreo.     
+
+##3. Datos a los que se tiene acceso.       
+
+Se cuenta con una base de datos con las siguientes variables, algunas clasificadas como **Si** (con riesgo de parasitosis) y **No** (sin riesgo de parasitosis), obtenidas mediante la encuesta realizada a los encargados de los niños pertenecientes a los *CEN*-*CINAI*:       
+
+*   **Tipo de vivienda**.       
+    +   No: Casa independiente, casa independiente en condominio, edificio de apartamentos, edificio de apartamentos en condominio.       
+    +   Si: Vivienda tradicional o indígena, cuarto en cuartería, tugurio, casa móvil o camión, bache o barraca para trabajadores, hogar, cárcel, convento o pensión.     
+    
+*   **Material de las paredes**.        
+    +   No: Block o ladrillo, zócalo, madera, prefabricado o baldosas, fibrolit o ricalit, fibras naturales.       
+    +   Si: Fibras naturales, material de desecho o zinc.       
+    
+*   **Techo de la casa**.       
+    +   No: Zinc, fibrolit, ricalit o asbesto.      
+    +   Si: Material natural como palma, paja, suita o material de desecho.        
+    
+*   **Piso de la casa**.        
+    +   No: Cerámica, mosaico, terrazo, cemento, madera.        
+    +   Si: Piso de tierra.     
+    
+*   **Miembros de la familia bajo el mismo techo**.     
+    +   No: Cuatro personas o menos.     
+    +   Si: Más de cuatro personas.     
+    
+*   **Agua de la casa**.        
+    +   No: ASADAS,CARR, municipalidad, AyA, acueducto de empresa o cooperativa.        
+    +   Si: Pozo, río, camión cisterna o hidrante.
+
+*   **Agua entubada hasta el hogar**.       
+    +   No: Si.     
+    +   Si: No.     
+    
+*   **Servicio sanitario**.     
+    +   No: Alcantarillado sanitario y tanque séptico.      
+    +   Si: Salida directa a acequia, zanja, río o estero, es un hueco de pozo negro o letrina.        
+    
+*   **Edad del padre o encargado**.     
+    +   No: De 21 a 50 años.        
+    +   Si: De 15 a 20 y de 51 a 70 años.       
+    
+*   **Último año aprobado por el padre o encargado**.       
+    +   No: Secundaria, parauniversitaria y universitaria.      
+    +   Si: Ningún grado, kínder o preparatoria, primaria.      
+    
+*   **Sexo del padre o encargado**.     
+    +   No: Femenino.       
+    +   Si: Masculino.      
+    
+*   **Trabajó la semana pasada**.       
+    +   No: Trabajó durante una hora o más, no trabajó pero tiene empleo.     
+    +   Si: Ayudó en un negocio o finca familiar sin pago, ninguna de las anteriores.     
+    
+*   **Actividades que realizó la semana pasada**.       
+    +   No: Labores agrícolas, crió o pescó, vendió productos, cuidó personas limpió, planchó para otro hogar, hizo trabajos variados.       
+    +   Si: No realizó ninguna de las anteriores.       
+    
+*   **Niño tomó desparasitantes**.      
+    +   No: Si.     
+    +   Si: No.     
+    
+*   **Niño tuvo diarrea en los últimos seis meses**.        
+    +   No: No.     
+    +   Si: Si.     
+    
+*   **Año de la última cita médica del niño**.      
+    +   No: Menos de un año.        
+    +   Si: Más de un año.      
+
+##4. Obtención de la base de datos.     
+
+La base de datos final fue brindada por la Lic. Melissa Solano el 24 de Agosto de 2016 a las 09:36 a.m. hora de Costa Rica.     
+
+
