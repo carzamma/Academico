@@ -85,69 +85,161 @@ Como se mencionó anteriormente también se puede realizar una distribución de 
 
 ##3. Datos a los que se tiene acceso.       
 
-Se cuenta con una base de datos con las siguientes variables, algunas clasificadas como **Si** (con riesgo de parasitosis) y **No** (sin riesgo de parasitosis), obtenidas mediante la encuesta realizada a los encargados de los niños pertenecientes a los *CEN*-*CINAI*:       
+Se cuenta con una base de datos con 153 variables de las cuales se utilizarán únicamente 38, algunas clasificadas como **1 (Si)** (con riesgo de parasitosis) y **0 (No)** (sin riesgo de parasitosis), obtenidas mediante la encuesta realizada a los encargados de los niños pertenecientes a los *CEN*-*CINAI*:       
 
-*   **Tipo de vivienda**.       
+*   **Centro (CENTRO)**: Centro al que pertenece el niño.       
+    +   0: Alajuelita.      
+    +   1: Aserrí.      
+    +   2: Gravilias.       
+    +   3: La Facio.        
+    +   4: Uruca.       
+    +   5: Paso Ancho.      
+    +   6: Pavas.       
+    +   7: Puriscal.        
+    +   8: Río Azul.        
+    +   9: Salitrillos.     
+    +   10: San Juan.       
+    +   11: San Miguel.     
+    +   12: San Rafael.     
+
+*   **API-DAF (API)**: Programa de apoyo con el que cuenta el niño.     
+    +   0: API.     
+    +   1: API+DAF.      
+    +   2: DAF.
+
+*   **Sexo (SEXO)**: Sexo del niño.     
+    +   0: Femenino.        
+    +   1: Masculino.       
+
+*   **Clasificación OMS (CF_OMS)**: Clasificación de peso y talla de la Organización Mundial de la Salud (OMS).     
+    +   0: Normal.      
+    +   1: Talla alta y peso adecuado.      
+    +   2: Talla normal y sobrepeso.        
+    +   3: Talla normal y delgado.      
+    +   4: Talla baja y peso adecuado.      
+    +   5: Talla baja y sobrepeso.      
+    +   6: Talla baja y delgado.        
+
+*   **Clasificación MS (CF_MS)**: Clasificación de peso y talla del Ministerio de Salud (MS).     
+    +   0: Normal.      
+    +   1: Talla alta y peso adecuado.      
+    +   2: Talla normal y sobrepeso.        
+    +   3: Talla normal y delgado.      
+    +   4: Talla baja y peso adecuado.      
+    +   5: Talla baja y sobrepeso.      
+    +   6: Talla baja y delgado.        
+
+*    **Muestra de heces (HECES)**: Niños de los que se tiene una muestra de heces.       
+    +   0: No aportó muestra.       
+    +   1: Sí aportó muestra.       
+
+*   **Factor de expansión (FACTOR_EXP)**: Factor de expansión para la ponderación de los datos.       
+
+*   **Entamoeba coli (E_COLI)**: Presencia o ausencia de Entamoeba coli.       
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Endolimax nana (E_999999)**: Presencia o ausencia de Endolimax nana.       
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Giardia intestinalis (GIARDIA)**: Presencia o ausencia de Giardia intestinalis.       
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Blastocystis hominis (BLASTOCYSTIS)**: Presencia o ausencia de Blastocystis hominis.        
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Entamoeba histolytica/E.dispar (HISTOLYTICA_DISPAR)**: Presencia o ausencia de Entamoeba histolytica/E.dispar.       
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Entamoeba hartmanni (HARTMANNI)**: Presencia o ausencia de Entamoeba hartmanni.        
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Iodamoeba bütschlii (IODAMOEBA)**: Presencia o ausencia de Iodamoeba bütschlii.      
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Cryptosporidium (CRYPTOSPORIDIUM)**: Presencia o ausencia de Cryptosporidium.        
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Ascaris lumbricoides (ASCARIS)**: Presencia o ausencia de Ascaris lumbricoides.       
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Trichocephalus trichiurus (TRICHOCEPHALUS)**: Presencia o ausencia de Trichocephalus trichiurus.      
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   **Uncinariasis (UNCI999RIAS)**: Presencia o ausencia de Uncinariasis.       
+    +   0: No detectado.        
+    +   1: Detectado.       
+
+*   ****: Presencia o ausencia de .
+
+####Variables de riesgo.        
+
+*   **Tipo de vivienda (VIV_REC)**.       
     +   No: Casa independiente, casa independiente en condominio, edificio de apartamentos, edificio de apartamentos en condominio.       
     +   Si: Vivienda tradicional o indígena, cuarto en cuartería, tugurio, casa móvil o camión, bache o barraca para trabajadores, hogar, cárcel, convento o pensión.     
     
-*   **Material de las paredes**.        
+*   **Material de las paredes (PAREDES_REC)**.        
     +   No: Block o ladrillo, zócalo, madera, prefabricado o baldosas, fibrolit o ricalit, fibras naturales.       
     +   Si: Fibras naturales, material de desecho o zinc.       
     
-*   **Techo de la casa**.       
+*   **Techo de la casa (TECHO_REC)**.       
     +   No: Zinc, fibrolit, ricalit o asbesto.      
     +   Si: Material natural como palma, paja, suita o material de desecho.        
     
-*   **Piso de la casa**.        
+*   **Piso de la casa (PISO_REC)**.        
     +   No: Cerámica, mosaico, terrazo, cemento, madera.        
     +   Si: Piso de tierra.     
     
-*   **Miembros de la familia bajo el mismo techo**.     
+*   **Miembros de la familia bajo el mismo techo (TAMFAM_REC)**.     
     +   No: Cuatro personas o menos.     
     +   Si: Más de cuatro personas.     
     
-*   **Agua de la casa**.        
+*   **Agua de la casa (AGUA_REC)**.        
     +   No: ASADAS,CARR, municipalidad, AyA, acueducto de empresa o cooperativa.        
     +   Si: Pozo, río, camión cisterna o hidrante.
 
-*   **Agua entubada hasta el hogar**.       
+*   **Agua entubada hasta el hogar (ENTUBADA_REC)**.       
     +   No: Si.     
     +   Si: No.     
     
-*   **Servicio sanitario**.     
+*   **Servicio sanitario (SANITARIO_REC)**.     
     +   No: Alcantarillado sanitario y tanque séptico.      
     +   Si: Salida directa a acequia, zanja, río o estero, es un hueco de pozo negro o letrina.        
     
-*   **Edad del padre o encargado**.     
+*   **Edad del padre o encargado (ANOS_2REC)**.     
     +   No: De 21 a 50 años.        
     +   Si: De 15 a 20 y de 51 a 70 años.       
     
-*   **Último año aprobado por el padre o encargado**.       
+*   **Último año aprobado por el padre o encargado (ULTAN_REC)**.       
     +   No: Secundaria, parauniversitaria y universitaria.      
     +   Si: Ningún grado, kínder o preparatoria, primaria.      
     
-*   **Sexo del padre o encargado**.     
+*   **Sexo del padre o encargado (SEXPAD_REC)**.     
     +   No: Femenino.       
     +   Si: Masculino.      
     
-*   **Trabajó la semana pasada**.       
+*   **Trabajó la semana pasada (TRAB_REC)**.       
     +   No: Trabajó durante una hora o más, no trabajó pero tiene empleo.     
     +   Si: Ayudó en un negocio o finca familiar sin pago, ninguna de las anteriores.     
     
-*   **Actividades que realizó la semana pasada**.       
-    +   No: Labores agrícolas, crió o pescó, vendió productos, cuidó personas limpió, planchó para otro hogar, hizo trabajos variados.       
-    +   Si: No realizó ninguna de las anteriores.       
-    
-*   **Niño tomó desparasitantes**.      
+*   **Niño tomó desparasitantes (DESPARA_REC)**.      
     +   No: Si.     
     +   Si: No.     
     
-*   **Niño tuvo diarrea en los últimos seis meses**.        
+*   **Niño tuvo diarrea en los últimos seis meses (DIAR_REC)**.        
     +   No: No.     
     +   Si: Si.     
     
-*   **Año de la última cita médica del niño**.      
+*   **Año de la última cita médica del niño (ANCITA_REC)**.      
     +   No: Menos de un año.        
     +   Si: Más de un año.      
 
@@ -155,4 +247,65 @@ Se cuenta con una base de datos con las siguientes variables, algunas clasificad
 
 La base de datos final fue brindada por la Lic. Melissa Solano el 24 de Agosto de 2016 a las 09:36 a.m. hora de Costa Rica.     
 
+##5. Limpieza de la base de datos.      
+
+```{r, message=FALSE, warning=FALSE}
+##Paquetes a utilizar##
+library(sjmisc)
+library(data.table)
+library(dplyr)
+```
+
+Primero se importa la base de datos desde SPSS, la cual, en cada entrada de la misma, se conservarán sus valores numéricos.
+
+```{r}
+base<-read_spss("BD_ANEMIA_NUTRI_2.sav",
+                attach.var.labels = TRUE,
+                option="foreign")
+base<-tbl_df(base)
+```
+
+Para poder conservar las etiquetas de las variables, usamos el siguiente comando.
+
+```{r}
+labs<-get_labels(base)
+head(labs, 3)
+```
+
+El siguiente paso es seleccionar únicamente las variables necesarias, las cuales fueron mencionadas previamente.      
+
+```{r}
+base<-select(base, CENTRO, API, SEXO, CF_OMS, CF_MS,
+             HECES, FACTOR_EXP, E_COLI, E_999999,
+             GIARDIA, BLASTOCYSTIS, HISTOLYTICA_DISPAR,
+             HARTMANNI, IODAMOEBA, CRYPTOSPORIDIUM, ASCARIS, 
+             TRICHOCEPHALUS, UNCI999RIAS, H_999999, H_DIMINUTA, 
+             OTRO_PARA1TO, EDAD_MESES, VIV_REC,
+             PAREDES_REC, TECHO_REC, PISO_REC, AGUA_REC, 
+             ENTUBADA_REC, SANITARIO_REC, ANOS_2REC, 
+             ULTAN_REC, TRAB_REC, SEXPAD_REC, DESPARA_REC, 
+             DIAR_REC, TAMFAM_REC, ANCITA_REC)
+labs<-get_labels(base)
+```
+
+Finalmente, para poder realizar todos los análisis relacionados con la parasitosis, solo pueden considerarse aquellos niños con los que se cuenta con muestra de heces, pues si no hay muestra no pueden detectarse los parásitos.       
+
+```{r}
+base<-filter(base, HECES==1)
+base<-select(base, -HECES)
+base<-base%>%
+      mutate(CENTRO=factor(CENTRO), API=factor(API), 
+             SEXO=factor(SEXO), CF_OMS=factor(CF_OMS), 
+             CF_MS=factor(CF_MS))
+base<-rename(base, centro=CENTRO, api.daf=API, sexo=SEXO, c.oms=CF_OMS,
+             c.ms=CF_MS, pond=FACTOR_EXP, e.coli=E_COLI, e.nana=E_999999, 
+             giardia=GIARDIA, blasto=BLASTOCYSTIS, histo=HISTOLYTICA_DISPAR, 
+             harma=HARTMANNI, iomado=IODAMOEBA, crypto=CRYPTOSPORIDIUM, 
+             ascaris=ASCARIS, tricho= TRICHOCEPHALUS, uncina=UNCI999RIAS, 
+             otros.par=OTRO_PARA1TO, edad=EDAD_MESES, vivienda=VIV_REC, 
+             paredes=PAREDES_REC, techo=TECHO_REC, piso=PISO_REC, agua=AGUA_REC,
+             entubada=ENTUBADA_REC, sanitario=SANITARIO_REC, edad.padre=ANOS_2REC, 
+             aprobado=ULTAN_REC, trabajo=TRAB_REC, sexo.padre=SEXPAD_REC, 
+             despara=DESPARA_REC, diarrea=DIAR_REC, familia=TAMFAM_REC, cita=ANCITA_REC)
+```
 
