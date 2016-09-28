@@ -307,5 +307,318 @@ base<-rename(base, centro=CENTRO, api.daf=API, sexo=SEXO, c.oms=CF_OMS,
              entubada=ENTUBADA_REC, sanitario=SANITARIO_REC, edad.padre=ANOS_2REC, 
              aprobado=ULTAN_REC, trabajo=TRAB_REC, sexo.padre=SEXPAD_REC, 
              despara=DESPARA_REC, diarrea=DIAR_REC, familia=TAMFAM_REC, cita=ANCITA_REC)
+base
+```
+
+##6. Análisis de datos exploratorio.        
+
+Al analizar la parasitosis, es conveniente crear una variable que identifique si un niño cuenta o no con esta enfermedad, para ello se sumarán todos los parásitos detectados y si este valor es mayor o igual que uno, entonces el niño efectivamente tiene parasitosis.      
+
+```{r}
+base<-mutate(base, parasitos=apply(base[, 7:20], 1, sum))
+base<-mutate(base, parasitosis=ifelse(base$parasitos>0, 1, 0))
+```
+
+Para una mejor comprensión del valor de un análisis preciso de tablas 2x2 conviene hacer una distinción entre la significancia estadística y la magnitud de la asociación.   
+
+El análisis clásico de las tablas 2x2 pone a prueba la hipótesis estadística de independencia, que es equivalente a decir que la tabla observada es altamente probable en una selección al azar; es decir, se analiza la falta de independencia, lo que lleva a otro razonamiento, la falta de independencia implica asociación.      
+
+La falta de independencia no es un indicador preciso de la magnitud de la asociación, para este fin se pueden usar los Odds Ratio (OR), los cuales, en una tabla 2x2 se calculan de la siguiente forma:     
+
+$$OR=\frac{a\cdot d}{b\cdot d}$$ 
+
+Mientras que para la razón de prevalencia se tiene:     
+
+$$\frac{d/(c+d)}{b/(a+b)}$$
+
+Existen pruebas estadísticas e intervalos de confianza para el OR, pero en general, usado conjuntamente con la prueba de Pearson o la prueba de Fisher, es posible hacer un razonamiento adecuado.      
+
+Cada celda en la tabla hace una contribución al OR. Cuando una o más celdas tienen un valor desproporcionado con respecto a los marginales, se genera una desviación del valor del OR con respecto a 1, indicando que hay una asociación de cierta magnitud. Este hecho puede ilustrarse fácilemente mediante el uso de diagramas de cuadrantes para representar las tablas de doble entrada. Estos diagramas muestran una serie de anillos concéntricos, donde el anillo central representa la contribución de cada celda al OR (o bien, para ser más precisos, al $log(OR)$, mientras que los anillos que aparecen al interior y al exterior representan el intervalo de confianza.      
+
+Si los valores de las celdas son proporcionales, dados los marginales, el anillo central debe coincidir para los cuadrantes dentro del margen establecido por el intervalo de confianza. Cuando se genera una asociación de cierta magnitud, el anillo central se descuadra, mostrando así el valor desproporcional de las distintas celdas.       
+
+Para iniciar, se obtienen las tablas de contingencia de los niños con y sin parasitosis con respecto a cada una de las variables dicotómicas de estudio $(tblo_i)$, así como las tablas para sus valores esperados $(tble_i)$, coeficientes de contingencia y las probabilidades $(chip_i)$ para la prueba de independencia; también se obtienen los OR y las razones de prevalencia (excepto para el sexo del encargado).                
+
+```{r, echo=FALSE}
+library(survey)
+clus<-svydesign(id=~centro, weights=~pond, data=base)
+
+#Tipo de vivienda#
+tblo1<-svytable(~parasitosis+vivienda, clus, round=TRUE)
+tble1<-chisq.test(tblo1, correct=FALSE)$expected
+chis1<-sqrt(chisq.test(tblo1, correct=FALSE)$statistic/(chisq.test(tblo1, correct=FALSE)$statistic+sum(tblo1)))
+chip1<-chisq.test(tblo1, correct=FALSE)$p.value
+
+#Material de las paredes#
+tblo2<-svytable(~parasitosis+paredes, clus, round=TRUE)
+tble2<-chisq.test(tblo2, correct=FALSE)$expected
+chis2<-sqrt(chisq.test(tblo2, correct=FALSE)$statistic/(chisq.test(tblo2, correct=FALSE)$statistic+sum(tblo2)))
+chip2<-chisq.test(tblo2, correct=FALSE)$p.value
+
+#Techo de la casa#
+tblo3<-svytable(~parasitosis+techo, clus, round=TRUE)
+tble3<-chisq.test(tblo3, correct=FALSE)$expected
+chis3<-sqrt(chisq.test(tblo3, correct=FALSE)$statistic/(chisq.test(tblo3, correct=FALSE)$statistic+sum(tblo3)))
+chip3<-chisq.test(tblo3, correct=FALSE)$p.value
+
+#Piso de la casa#
+tblo4<-svytable(~parasitosis+piso, clus, round=TRUE)
+tble4<-chisq.test(tblo4, correct=FALSE)$expected
+chis4<-sqrt(chisq.test(tblo4, correct=FALSE)$statistic/(chisq.test(tblo4, correct=FALSE)$statistic+sum(tblo4)))
+chip4<-chisq.test(tblo4, correct=FALSE)$p.value
+
+#Miembros de la familia bajo el mismo techo#
+tblo5<-svytable(~parasitosis+familia, clus, round=TRUE)
+tble5<-chisq.test(tblo5, correct=FALSE)$expected
+chis5<-sqrt(chisq.test(tblo5, correct=FALSE)$statistic/(chisq.test(tblo5, correct=FALSE)$statistic+sum(tblo5)))
+chip5<-chisq.test(tblo5, correct=FALSE)$p.value
+
+#Agua de la casa#
+tblo6<-svytable(~parasitosis+agua, clus, round=TRUE)
+tble6<-chisq.test(tblo6, correct=FALSE)$expected
+chis6<-sqrt(chisq.test(tblo6, correct=FALSE)$statistic/(chisq.test(tblo6, correct=FALSE)$statistic+sum(tblo6)))
+chip6<-chisq.test(tblo6, correct=FALSE)$p.value
+
+#Agua entubada hasta el hogar#
+tblo7<-svytable(~parasitosis+entubada, clus, round=TRUE)
+tble7<-chisq.test(tblo7, correct=FALSE, simulate.p.value = TRUE)$expected
+chis7<-sqrt(chisq.test(tblo7, correct=FALSE, simulate.p.value = TRUE)$statistic/(chisq.test(tblo7, correct=FALSE, simulate.p.value = TRUE)$statistic+sum(tblo7)))
+chip7<-chisq.test(tblo7, correct=FALSE, simulate.p.value = TRUE)$p.value
+
+#Servicio sanitario#
+tblo8<-svytable(~parasitosis+sanitario, clus, round=TRUE)
+tble8<-chisq.test(tblo8, correct=FALSE)$expected
+chis8<-sqrt(chisq.test(tblo8, correct=FALSE)$statistic/(chisq.test(tblo8, correct=FALSE)$statistic+sum(tblo8)))
+chip8<-chisq.test(tblo8, correct=FALSE)$p.value
+
+#Edad del padre o encargado#
+tblo9<-svytable(~parasitosis+edad.padre, clus, round=TRUE)
+tble9<-chisq.test(tblo9, correct=FALSE)$expected
+chis9<-sqrt(chisq.test(tblo9, correct=FALSE)$statistic/(chisq.test(tblo9, correct=FALSE)$statistic+sum(tblo9)))
+chip9<-chisq.test(tblo9, correct=FALSE)$p.value
+
+#Último año aprobado por el padre o encargado#
+tblo10<-svytable(~parasitosis+aprobado, clus, round=TRUE)
+tble10<-chisq.test(tblo10, correct=FALSE)$expected
+chis10<-sqrt(chisq.test(tblo10, correct=FALSE)$statistic/(chisq.test(tblo10, correct=FALSE)$statistic+sum(tblo10)))
+chip10<-chisq.test(tblo10, correct=FALSE)$p.value
+
+#Trabajó la semana pasada#
+tblo11<-svytable(~parasitosis+trabajo, clus, round=TRUE)
+tble11<-chisq.test(tblo11, correct=FALSE)$expected
+chis11<-sqrt(chisq.test(tblo11, correct=FALSE)$statistic/(chisq.test(tblo11, correct=FALSE)$statistic+sum(tblo11)))
+chip11<-chisq.test(tblo11, correct=FALSE)$p.value
+
+#Niño tomó desparasitantes en el último año#
+tblo12<-svytable(~parasitosis+despara, clus, round=TRUE)
+tble12<-chisq.test(tblo12, correct=FALSE)$expected
+chis12<-sqrt(chisq.test(tblo12, correct=FALSE)$statistic/(chisq.test(tblo12, correct=FALSE)$statistic+sum(tblo12)))
+chip12<-chisq.test(tblo12, correct=FALSE)$p.value
+
+#Niño tuvo diarrea en los últimos seis meses#
+tblo13<-svytable(~parasitosis+diarrea, clus, round=TRUE)
+tble13<-chisq.test(tblo13, correct=FALSE)$expected
+chis13<-sqrt(chisq.test(tblo13, correct=FALSE)$statistic/(chisq.test(tblo13, correct=FALSE)$statistic+sum(tblo13)))
+chip13<-chisq.test(tblo13, correct=FALSE)$p.value
+
+#Año de la última cita médica#
+tblo14<-svytable(~parasitosis+cita, clus, round=TRUE)
+tble14<-chisq.test(tblo14, correct=FALSE)$expected
+chis14<-sqrt(chisq.test(tblo14, correct=FALSE)$statistic/(chisq.test(tblo14, correct=FALSE)$statistic+sum(tblo14)))
+chip14<-chisq.test(tblo14, correct=FALSE)$p.value
+
+#Sexo del niño#
+tblo15<-svytable(~parasitosis+sexo, clus, round=TRUE)
+tble15<-chisq.test(tblo15, correct=FALSE)$expected
+chis15<-sqrt(chisq.test(tblo15, correct=FALSE)$statistic/(chisq.test(tblo15, correct=FALSE)$statistic+sum(tblo15)))
+chip15<-chisq.test(tblo15, correct=FALSE)$p.value
+
+#Sexo del padre o encargado#
+tblo16<-svytable(~parasitosis+sexo.padre, clus, round=TRUE)
+tble16<-chisq.test(tblo16, correct=FALSE)$expected
+chis16<-sqrt(chisq.test(tblo16, correct=FALSE)$statistic/(chisq.test(tblo16, correct=FALSE)$statistic+sum(tblo16)))
+chip16<-chisq.test(tblo16, correct=FALSE)$p.value
+
+#Datos de no riesgo sin parasitosis#
+noriesgosin<-NULL
+tblolist<-list(tblo1, tblo2, tblo3, tblo4, tblo5, tblo6, 
+               tblo7, tblo8, tblo9, tblo10, tblo11, tblo12, 
+               tblo13, tblo14, tblo15, tblo16)
+
+for(i in seq_along(tblolist))
+{
+    noriesgosin[i]<-list(tblolist[[i]][1:2])
+}
+
+noriesgosin<-sapply(noriesgosin, cbind, simplify = TRUE)[1:32]
+
+#Datos de no riesgo con parasitosis#
+noriesgocon<-NULL
+tblolist<-list(tblo1, tblo2, tblo3, tblo4, tblo5, tblo6, 
+               tblo7, tblo8, tblo9, tblo10, tblo11, tblo12, 
+               tblo13, tblo14, tblo15, tblo16)
+
+for(i in seq_along(tblolist))
+{
+    noriesgocon[i]<-list(tblolist[[i]][3:4])
+}
+
+noriesgocon<-sapply(noriesgocon, cbind, simplify = TRUE)[1:32]
+
+#Datos esperados de no riesgo sin parasitosis#
+noriesgoessin<-NULL
+tblolist<-list(tble1, tble2, tble3, tble4, tble5, tble6, 
+               tble7, tble8, tble9, tble10, tble11, tble12, 
+               tble13, tble14, tble15, tblo16)
+
+for(i in seq_along(tblolist))
+{
+    noriesgoessin[i]<-list(tblolist[[i]][1:2])
+}
+
+noriesgoessin<-sapply(noriesgoessin, cbind, simplify = TRUE)[1:32]
+
+#Datos esperados de riesgo con parasitosis#
+noriesgoescon<-NULL
+tblolist<-list(tble1, tble2, tble3, tble4, tble5, tble6, 
+               tble7, tble8, tble9, tble10, tble11, tble12, 
+               tble13, tble14, tble15, tblo16)
+
+for(i in seq_along(tblolist))
+{
+    noriesgoescon[i]<-list(tblolist[[i]][3:4])
+}
+
+noriesgoescon<-sapply(noriesgoescon, cbind, simplify = TRUE)[1:32]
+
+#Valores chi de cada tabla#
+chistat<-NULL
+chislist<-list(chis1, chis2, chis3, chis4, chis5, chis6, 
+               chis7, chis8, chis9, chis10, chis11, chis12, 
+               chis13, chis14, chis15, chis16)
+
+for(i in seq_along(chislist))
+{
+    chistat[i]<-list(c(chislist[[i]], NA))
+}
+
+chistat<-sapply(chistat, cbind, simplify = TRUE)[1:32]
+
+#Probabilidades asociadas#
+chiprob<-NULL
+chiplist<-list(chip1, chip2, chip3, chip4, chip5, chip6, 
+               chip7, chip8, chip9, chip10, chip11, chip12, 
+               chip13, chip14, chip15, chip16)
+
+for(i in seq_along(chiplist))
+{
+    chiprob[i]<-list(c(chiplist[[i]], NA))
+}
+
+chiprob<-sapply(chiprob, cbind, simplify = TRUE)[1:32]
+
+#Razones de prevalencia#
+RP<-NULL
+tblolist<-list(tblo1, tblo2, tblo3, tblo4, tblo5, tblo6, 
+               tblo7, tblo8, tblo9, tblo10, tblo11, tblo12, 
+               tblo13, tblo14, tblo15, tblo16)
+
+for( i in seq_along(tblolist))
+{
+    RP[i]<-list(c((tblolist[[i]][4]/(tblolist[[i]][2]+tblolist[[i]][3]))/
+                  (tblolist[[i]][3]/(tblolist[[i]][1]+tblolist[[i]][3])), NA))
+}
+
+RP<-sapply(RP, cbind, simplify = TRUE)[1:32]
+RP[c(29,31)]<-NA #Se elimina pues no interesa para esta variable#
+
+#OR#
+OR<-NULL
+tblolist<-list(tblo1, tblo2, tblo3, tblo4, tblo5, tblo6, 
+               tblo7, tblo8, tblo9, tblo10, tblo11, tblo12, 
+               tblo13, tblo14, tblo15, tblo16)
+
+for( i in seq_along(tblolist))
+{
+    OR[i]<-list(c((tblolist[[i]][1]*tblolist[[i]][4])/
+                  (tblolist[[i]][2]*tblolist[[i]][3]), NA))
+}
+
+OR<-sapply(OR, cbind, simplify = TRUE)[1:32]
+OR[c(29,31)]<-NA #Se elimina pues no interesa para esta variable#
+
+#Finalmente se genera un cuadro resumen de los datos#
+
+library(formattable)
+
+df<-data.frame(
+    Variable= c("Tipo de vivienda","",
+                "Material de paredes","",
+                "Techo de la casa","",
+                "Piso de la casa", "",
+                "Miembros de la familia bajo el mismo techo","",
+                "Agua de la casa","",
+                "Agua entubada hasta el hogar","", 
+                "Servicio sanitario","",
+                "Edad del padre o encargado","",
+                "Último año aprobado por el padre o encargado","", 
+                "Trabajó la semana pasada","",
+                "Niño tomó desparasitantes el último año","", 
+                "Niño tuvo diarrea en últimos 6 meses", "",
+                "Año de la última cita médica","",
+                "Sexo del niño (1=Hombre, 0=Mujer)","",
+                "Sexo del padre o encargado (1=Hombre, 0=Mujer)",""),
+    Riesgo=rep(c("No", "Si"), 16),
+    SPO=noriesgosin,
+    CPO=noriesgocon,
+    SPE=round(noriesgoessin, 2),
+    CPE=round(noriesgoescon, 2),
+    CC=accounting(chistat),
+    Probabilidad=accounting(chiprob),
+    Independencia=ifelse(chiprob<0.05, TRUE, FALSE),
+    RP=accounting(RP),
+    OR=accounting(OR)
+    )
+
+formattable(df, list(
+    CC=formatter(
+                  "span", x~ifelse(is.na(x)==TRUE, "", round(x, 2))),
+    Probabilidad=formatter(
+                 "span",style=x~ifelse(x<=0.05, style(color="red", 
+                 font.weight="bold"), NA),
+                 x~ifelse(x<=0.00001,"<0.00001", round(x, 4))),
+    Independencia=formatter(
+               "span",style=x~style(color=ifelse(x, "red", "green")),
+               x~icontext(ifelse(x, "remove", "ok"), ifelse(x, "No", "Si"))
+               ),
+    RP=formatter(
+                  "span", x~ifelse(is.na(x)==TRUE, "", round(x, 2))),
+    OR=formatter(
+                  "span", x~ifelse(is.na(x)==TRUE, "", round(x, 2)))
+                 )
+    )
+```
+
+Donde *SPO* son los valores observados de niños sin parasitosis, *CPO* los casos observados con parasitosis, mientras que *SPE* y *CPE* son los valores esperados de niños sin parasitosis y con parasitosis respectivamente; de la misma forma *RP* y *OR* son la razón de prevalencia y el odds ratio respectivamente para cada variable y *CC* es el coeficiente de contingencia.   Los valores esperados se agregan pues si para alguno de los cruces éste es menor a 5, se deben hacer simulaciones para estimar la probabilidad, esto sucede con la variable *Agua entubada hasta el hogar*. 
+
+El siguiente paso es generar los diagramas de cuadrantes para cada una de las variables.      
+
+```{r, echo=FALSE, results='hide'}
+par(mfrow=c(1,2))
+lapply(tblolist[c(1:5,7,9:11,16)], fourfoldplot, conf.level=0.95)
+```
+
+TETRACHORICA
+
+```{r}
+install.packages("polycor", dependencies=T)
+library(psych)
+library(polycor)
+
+tetrachoric(tblo3)
+
+draw.tetra(-.25, .7,2.1)
+draw.cor(r=-.25, cuts=c(.7,2.1), expand=20)
+
 ```
 
