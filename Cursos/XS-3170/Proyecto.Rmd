@@ -2,7 +2,7 @@
 title: "Análisis - Proyecto Experimentos II"
 author: "César Gamboa S."
 date: "17 de septiembre de 2016"
-output: word_document
+output: pdf_document
 ---
 
 #1. Definición de la pregunta.        
@@ -179,7 +179,9 @@ Se cuenta con una base de datos con 153 variables de las cuales se utilizarán �
     +   0: No detectado.        
     +   1: Detectado.       
 
-*   ****: Presencia o ausencia de .
+*   **Helmintos (h1 y h.dim)**: Presencia o ausencia de helmintos (por separado).       
+    +   0: No detectado.        
+    +   1: Detectado.  
 
 ####Variables de riesgo.        
 
@@ -301,7 +303,8 @@ base<-rename(base, centro=CENTRO, api.daf=API, sexo=SEXO, c.oms=CF_OMS,
              c.ms=CF_MS, pond=FACTOR_EXP, e.coli=E_COLI, e.nana=E_999999, 
              giardia=GIARDIA, blasto=BLASTOCYSTIS, histo=HISTOLYTICA_DISPAR, 
              harma=HARTMANNI, iomado=IODAMOEBA, crypto=CRYPTOSPORIDIUM, 
-             ascaris=ASCARIS, tricho= TRICHOCEPHALUS, uncina=UNCI999RIAS, 
+             ascaris=ASCARIS, tricho= TRICHOCEPHALUS, uncina=UNCI999RIAS,
+             h1=H_999999,h.dim=H_DIMINUTA,
              otros.par=OTRO_PARA1TO, edad=EDAD_MESES, vivienda=VIV_REC, 
              paredes=PAREDES_REC, techo=TECHO_REC, piso=PISO_REC, agua=AGUA_REC,
              entubada=ENTUBADA_REC, sanitario=SANITARIO_REC, edad.padre=ANOS_2REC, 
@@ -337,11 +340,12 @@ Cada celda en la tabla hace una contribución al OR. Cuando una o más celdas ti
 
 Si los valores de las celdas son proporcionales, dados los marginales, el anillo central debe coincidir para los cuadrantes dentro del margen establecido por el intervalo de confianza. Cuando se genera una asociación de cierta magnitud, el anillo central se descuadra, mostrando así el valor desproporcional de las distintas celdas.       
 
-Para iniciar, se obtienen las tablas de contingencia de los niños con y sin parasitosis con respecto a cada una de las variables dicotómicas de estudio $(tblo_i)$, así como las tablas para sus valores esperados $(tble_i)$, coeficientes de contingencia y las probabilidades $(chip_i)$ para la prueba de independencia; también se obtienen los OR y las razones de prevalencia (excepto para el sexo del encargado).                
+Para iniciar, se obtienen las tablas de contingencia de los niños con y sin parasitosis con respecto a cada una de las variables dicotómicas de estudio $(tblo_i)$, así como las tablas para sus valores esperados $(tble_i)$, coeficientes de contingencia y las probabilidades $(chip_i)$ para la prueba de independencia; también se obtienen los OR y las razones de prevalencia (excepto para el sexo del encargado). Como se trabajará con modelos lineales generalizados, una opción es analizar si existe alguna correlación lineal entre la parasitosis y las distintas variables dicotómicas de estudio, para esto se usará el coeficiente de correlación tetracórica $(Tetra)$.                
 
 ```{r, echo=FALSE}
 library(survey)
 clus<-svydesign(id=~centro, weights=~pond, data=base)
+library(psych)
 
 #Tipo de vivienda#
 tblo1<-svytable(~parasitosis+vivienda, clus, round=TRUE)
@@ -532,6 +536,17 @@ for( i in seq_along(tblolist))
 RP<-sapply(RP, cbind, simplify = TRUE)[1:32]
 RP[c(29,31)]<-NA #Se elimina pues no interesa para esta variable#
 
+#Coeficiente de correlación tetracórica#
+
+CCT<-sapply(tblolist, tetrachoric)[1,]
+
+for(i in seq_along(CCT))
+{
+    CCT[i]<-list(c(CCT[[i]], NA))
+}
+
+CCT<-sapply(CCT, cbind, simplify = TRUE)[1:32]
+
 #OR#
 OR<-NULL
 tblolist<-list(tblo1, tblo2, tblo3, tblo4, tblo5, tblo6, 
@@ -573,7 +588,8 @@ df<-data.frame(
     CPO=noriesgocon,
     SPE=round(noriesgoessin, 2),
     CPE=round(noriesgoescon, 2),
-    CC=accounting(chistat),
+    Tetra=accounting(CCT),
+    CC=accounting(sqrt(2)*chistat),
     Probabilidad=accounting(chiprob),
     Independencia=ifelse(chiprob<0.05, TRUE, FALSE),
     RP=accounting(RP),
@@ -581,6 +597,8 @@ df<-data.frame(
     )
 
 formattable(df, list(
+    Tetra=formatter(
+                  "span", x~ifelse(is.na(x)==TRUE, "", round(x, 2))),
     CC=formatter(
                   "span", x~ifelse(is.na(x)==TRUE, "", round(x, 2))),
     Probabilidad=formatter(
@@ -608,17 +626,71 @@ par(mfrow=c(1,2))
 lapply(tblolist[c(1:5,7,9:11,16)], fourfoldplot, conf.level=0.95)
 ```
 
-TETRACHORICA
+Por último, resulta interesante ver también gráficamente las correlaciones más altas (en valor absoluto) y la más baja.
 
 ```{r}
-install.packages("polycor", dependencies=T)
-library(psych)
-library(polycor)
+par(mfrow=c(1,1))
 
-tetrachoric(tblo3)
+for(i in c(1:3,12))
+{
+ rh<-lapply(tblolist[i], tetrachoric)[[1]]$rho
+ x1<-lapply(tblolist[i], tetrachoric)[[1]]$tau[1]
+ x2<-lapply(tblolist[i], tetrachoric)[[1]]$tau[2]
+ draw.cor(r=rh, cuts=c(x1,x2), expand=20, ellipses=FALSE)
+}
+```
 
-draw.tetra(-.25, .7,2.1)
-draw.cor(r=-.25, cuts=c(.7,2.1), expand=20)
+Los resultados anteriores parecen indicar que las variables que serán más relevantes para predecir la parasitosis son el tipo de vivienda y el material de las paredes, pues estas dos variables presentan las correlaciones más altas, además de mostrar falta de independencia con la variable de respuesta y, además, las asociaciones correspondientes también son las más altas. El piso de la casa también presenta una correlación alta y negativa con la parasitosis y a su vez son independientes entre ellas. Otras variables que podrían mostrar un aporte, aunque en menor medida que las dos primeras son el sexo del padre y los miembros de la familia bajo el mismo techo.      
 
+##7. Predicción y modelado estadístico.     
+
+El análisis exploratorio brinda una idea de lo que se puede esperar en esta sección, sin embargo se iniciará trabajando con modelos saturados para confirmar las sospechas que se tenían de la sección anterior. Para esta parte se eliminarán los *NA* de la base de datos.            
+
+Se trabajarán inicialmente tres modelos, dos logísticos y uno de Poisson, aunque dependiendo de los resultados obtenidos este número podría ampliarse.       
+
+```{r}
+base<-na.omit(base)
+base
+```
+
+
+###Modelo logístico con respuesta binaria.      
+
+Se trabajará un modelo logístico para predecir la parasitosis (en su forma binaria) en función de las distintas variables ya mencionadas. Se aniliza también de manera inicial la presencia de sobredispersión.            
+
+```{r}
+modlog1<-glm(parasitosis~centro+api.daf+sexo+c.oms+c.ms+edad+vivienda+
+                         paredes+techo+piso+agua+entubada+sanitario+
+                         edad.padre+aprobado+trabajo+sexo.padre+
+                         despara+diarrea+familia+cita, data=base,
+                         family=quasibinomial(link="logit"))
+summary(modlog1)
+```
+
+No hay indicios de sobredispersión pues su parámetro de dispersión es *1.03*, por lo que se puede asumir un modelo logístico clásico.       
+
+```{r}
+modlog1<-glm(parasitosis~centro+api.daf+sexo+c.oms+c.ms+edad+vivienda+
+                         paredes+techo+piso+agua+entubada+sanitario+
+                         edad.padre+aprobado+trabajo+sexo.padre+
+                         despara+diarrea+familia+cita, data=base,
+                         family=binomial(link="logit"))
+```
+
+Al tratarse de un modelo binomial, puede decirse que se conoce su variancia, por lo que una prueba chi-cuadrada es ideal para analizar cuales coeficientes son significativamente distintos de cero en este modelo.       
+
+```{r}
+drop1(modlog1, test="LRT")
+```
+
+Con excepción del Centro, nada resulta significativo, así que se probará un modelo únicamente con las variables socioeconómicas:       
+
+```{r}
+modlog1<-glm(parasitosis~centro+edad+vivienda+
+                         paredes+techo+piso+agua+entubada+sanitario+
+                         edad.padre+aprobado+trabajo+sexo.padre+
+                         despara+diarrea+familia+cita, data=base,
+                         family=binomial(link="logit"))
+drop1(modlog1, test="Chisq")
 ```
 
