@@ -1,8 +1,24 @@
 ---
 title: "Análisis - Proyecto Experimentos II"
-author: "César Gamboa S."
-date: "17 de septiembre de 2016"
-output: pdf_document
+thanks: "Replication files are available on the author's Github account..."
+author:
+- Gamboa, C.
+- Martínez, L.
+- Zamora, C.
+date: "`r format(Sys.time(), '%d %B %Y')`"
+tags: [nothing, nothingness]
+abstract: "Resumen del artículo"
+keywords: "poisson, overdispersion, r, regression, pearson"
+geometry: margin=1in
+output: 
+    html_document:
+        template: NULL
+        toc: true
+        number_sections: true
+        toc_depth: 3
+        fig_width: 7
+        fig_height: 6
+        fig_caption: true
 ---
 
 #1. Definición de la pregunta.        
@@ -251,7 +267,7 @@ La base de datos final fue brindada por la Lic. Melissa Solano el 24 de Agosto d
 
 ##5. Limpieza de la base de datos.      
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 ##Paquetes a utilizar##
 library(sjmisc)
 library(data.table)
@@ -260,7 +276,7 @@ library(dplyr)
 
 Primero se importa la base de datos desde SPSS, la cual, en cada entrada de la misma, se conservarán sus valores numéricos.
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 base<-read_spss("BD_ANEMIA_NUTRI_2.sav",
                 attach.var.labels = TRUE,
                 option="foreign")
@@ -269,7 +285,7 @@ base<-tbl_df(base)
 
 Para poder conservar las etiquetas de las variables, usamos el siguiente comando.
 
-```{r}
+```{r, results='hide'}
 labs<-get_labels(base)
 head(labs, 3)
 ```
@@ -280,10 +296,11 @@ El siguiente paso es seleccionar únicamente las variables necesarias, las cuale
 base<-select(base, CENTRO, API, SEXO, CF_OMS, CF_MS,
              HECES, FACTOR_EXP, E_COLI, E_999999,
              GIARDIA, BLASTOCYSTIS, HISTOLYTICA_DISPAR,
-             HARTMANNI, IODAMOEBA, CRYPTOSPORIDIUM, ASCARIS, 
-             TRICHOCEPHALUS, UNCI999RIAS, H_999999, H_DIMINUTA, 
-             OTRO_PARA1TO, EDAD_MESES, VIV_REC,
-             PAREDES_REC, TECHO_REC, PISO_REC, AGUA_REC, 
+             HARTMANNI, IODAMOEBA, CRYPTOSPORIDIUM, 
+             ASCARIS, TRICHOCEPHALUS, UNCI999RIAS, 
+             H_999999, H_DIMINUTA, OTRO_PARA1TO, 
+             EDAD_MESES, VIV_REC, PAREDES_REC, 
+             TECHO_REC, PISO_REC, AGUA_REC, 
              ENTUBADA_REC, SANITARIO_REC, ANOS_2REC, 
              ULTAN_REC, TRAB_REC, SEXPAD_REC, DESPARA_REC, 
              DIAR_REC, TAMFAM_REC, ANCITA_REC)
@@ -299,17 +316,23 @@ base<-base%>%
       mutate(CENTRO=factor(CENTRO), API=factor(API), 
              SEXO=factor(SEXO), CF_OMS=factor(CF_OMS), 
              CF_MS=factor(CF_MS))
-base<-rename(base, centro=CENTRO, api.daf=API, sexo=SEXO, c.oms=CF_OMS,
-             c.ms=CF_MS, pond=FACTOR_EXP, e.coli=E_COLI, e.nana=E_999999, 
-             giardia=GIARDIA, blasto=BLASTOCYSTIS, histo=HISTOLYTICA_DISPAR, 
-             harma=HARTMANNI, iomado=IODAMOEBA, crypto=CRYPTOSPORIDIUM, 
-             ascaris=ASCARIS, tricho= TRICHOCEPHALUS, uncina=UNCI999RIAS,
-             h1=H_999999,h.dim=H_DIMINUTA,
-             otros.par=OTRO_PARA1TO, edad=EDAD_MESES, vivienda=VIV_REC, 
-             paredes=PAREDES_REC, techo=TECHO_REC, piso=PISO_REC, agua=AGUA_REC,
-             entubada=ENTUBADA_REC, sanitario=SANITARIO_REC, edad.padre=ANOS_2REC, 
-             aprobado=ULTAN_REC, trabajo=TRAB_REC, sexo.padre=SEXPAD_REC, 
-             despara=DESPARA_REC, diarrea=DIAR_REC, familia=TAMFAM_REC, cita=ANCITA_REC)
+base<-rename(base, centro=CENTRO, api.daf=API, sexo=SEXO, 
+             c.oms=CF_OMS, c.ms=CF_MS, pond=FACTOR_EXP, 
+             e.coli=E_COLI, e.nana=E_999999, 
+             giardia=GIARDIA, blasto=BLASTOCYSTIS, 
+             histo=HISTOLYTICA_DISPAR, harma=HARTMANNI, 
+             iomado=IODAMOEBA, crypto=CRYPTOSPORIDIUM, 
+             ascaris=ASCARIS, tricho= TRICHOCEPHALUS, 
+             uncina=UNCI999RIAS, h1=H_999999,
+             h.dim=H_DIMINUTA, otros.par=OTRO_PARA1TO, 
+             edad=EDAD_MESES, vivienda=VIV_REC, 
+             paredes=PAREDES_REC, techo=TECHO_REC, 
+             piso=PISO_REC, agua=AGUA_REC,
+             entubada=ENTUBADA_REC, sanitario=SANITARIO_REC, 
+             edad.padre=ANOS_2REC, aprobado=ULTAN_REC, 
+             trabajo=TRAB_REC, sexo.padre=SEXPAD_REC, 
+             despara=DESPARA_REC, diarrea=DIAR_REC, 
+             familia=TAMFAM_REC, cita=ANCITA_REC)
 base
 ```
 
@@ -318,8 +341,10 @@ base
 Al analizar la parasitosis, es conveniente crear una variable que identifique si un niño cuenta o no con esta enfermedad, para ello se sumarán todos los parásitos detectados y si este valor es mayor o igual que uno, entonces el niño efectivamente tiene parasitosis.      
 
 ```{r}
-base<-mutate(base, parasitos=apply(base[, 7:20], 1, sum))
-base<-mutate(base, parasitosis=ifelse(base$parasitos>0, 1, 0))
+base<-mutate(base, parasitos=apply(base[, 7:20], 
+                                   1, sum))
+base<-mutate(base, parasitosis=ifelse(base$parasitos>0,
+                                      1, 0))
 ```
 
 Para una mejor comprensión del valor de un análisis preciso de tablas 2x2 conviene hacer una distinción entre la significancia estadística y la magnitud de la asociación.   
@@ -330,21 +355,17 @@ La falta de independencia no es un indicador preciso de la magnitud de la asocia
 
 $$OR=\frac{a\cdot d}{b\cdot d}$$ 
 
-Mientras que para la razón de prevalencia se tiene:     
-
-$$\frac{d/(c+d)}{b/(a+b)}$$
-
 Existen pruebas estadísticas e intervalos de confianza para el OR, pero en general, usado conjuntamente con la prueba de Pearson o la prueba de Fisher, es posible hacer un razonamiento adecuado.      
 
-Cada celda en la tabla hace una contribución al OR. Cuando una o más celdas tienen un valor desproporcionado con respecto a los marginales, se genera una desviación del valor del OR con respecto a 1, indicando que hay una asociación de cierta magnitud. Este hecho puede ilustrarse fácilemente mediante el uso de diagramas de cuadrantes para representar las tablas de doble entrada. Estos diagramas muestran una serie de anillos concéntricos, donde el anillo central representa la contribución de cada celda al OR (o bien, para ser más precisos, al $log(OR)$, mientras que los anillos que aparecen al interior y al exterior representan el intervalo de confianza.      
+Cada celda en la tabla hace una contribución al OR. Cuando una o más celdas tienen un valor desproporcionado con respecto a los marginales, se genera una desviación del valor del OR con respecto a 1, indicando que hay una asociación de cierta magnitud. Este hecho puede ilustrarse fácilemente mediante el uso de diagramas de cuadrantes para representar las tablas de doble entrada. Estos diagramas muestran una serie de anillos concéntricos, donde el anillo central representa la contribución de cada celda al OR (o bien, para ser más precisos, al $log(OR)$), mientras que los anillos que aparecen al interior y al exterior representan el intervalo de confianza.      
 
 Si los valores de las celdas son proporcionales, dados los marginales, el anillo central debe coincidir para los cuadrantes dentro del margen establecido por el intervalo de confianza. Cuando se genera una asociación de cierta magnitud, el anillo central se descuadra, mostrando así el valor desproporcional de las distintas celdas.       
 
 Para iniciar, se obtienen las tablas de contingencia de los niños con y sin parasitosis con respecto a cada una de las variables dicotómicas de estudio $(tblo_i)$, así como las tablas para sus valores esperados $(tble_i)$, coeficientes de contingencia y las probabilidades $(chip_i)$ para la prueba de independencia; también se obtienen los OR y las razones de prevalencia (excepto para el sexo del encargado). Como se trabajará con modelos lineales generalizados, una opción es analizar si existe alguna correlación lineal entre la parasitosis y las distintas variables dicotómicas de estudio, para esto se usará el coeficiente de correlación tetracórica $(Tetra)$.                
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(survey)
-clus<-svydesign(id=~centro, weights=~pond, data=base)
+clus<-svydesign(id=~centro, data=base)
 library(psych)
 
 #Tipo de vivienda#
@@ -361,9 +382,9 @@ chip2<-chisq.test(tblo2, correct=FALSE)$p.value
 
 #Techo de la casa#
 tblo3<-svytable(~parasitosis+techo, clus, round=TRUE)
-tble3<-chisq.test(tblo3, correct=FALSE)$expected
-chis3<-sqrt(chisq.test(tblo3, correct=FALSE)$statistic/(chisq.test(tblo3, correct=FALSE)$statistic+sum(tblo3)))
-chip3<-chisq.test(tblo3, correct=FALSE)$p.value
+tble3<-chisq.test(tblo3, correct=FALSE, simulate.p.value=TRUE)$expected
+chis3<-sqrt(chisq.test(tblo3, correct=FALSE, simulate.p.value=TRUE)$statistic/(chisq.test(tblo3, correct=FALSE, simulate.p.value = TRUE)$statistic+sum(tblo3)))
+chip3<-chisq.test(tblo3, correct=FALSE, simulate.p.value = TRUE)$p.value
 
 #Piso de la casa#
 tblo4<-svytable(~parasitosis+piso, clus, round=TRUE)
@@ -379,9 +400,9 @@ chip5<-chisq.test(tblo5, correct=FALSE)$p.value
 
 #Agua de la casa#
 tblo6<-svytable(~parasitosis+agua, clus, round=TRUE)
-tble6<-chisq.test(tblo6, correct=FALSE)$expected
-chis6<-sqrt(chisq.test(tblo6, correct=FALSE)$statistic/(chisq.test(tblo6, correct=FALSE)$statistic+sum(tblo6)))
-chip6<-chisq.test(tblo6, correct=FALSE)$p.value
+tble6<-chisq.test(tblo6, correct=FALSE, simulate.p.value=TRUE)$expected
+chis6<-sqrt(chisq.test(tblo6, correct=FALSE, simulate.p.value=TRUE)$statistic/(chisq.test(tblo6, correct=FALSE, simulate.p.value=TRUE)$statistic+sum(tblo6)))
+chip6<-chisq.test(tblo6, correct=FALSE, simulate.p.value=TRUE)$p.value
 
 #Agua entubada hasta el hogar#
 tblo7<-svytable(~parasitosis+entubada, clus, round=TRUE)
@@ -521,21 +542,6 @@ for(i in seq_along(chiplist))
 
 chiprob<-sapply(chiprob, cbind, simplify = TRUE)[1:32]
 
-#Razones de prevalencia#
-RP<-NULL
-tblolist<-list(tblo1, tblo2, tblo3, tblo4, tblo5, tblo6, 
-               tblo7, tblo8, tblo9, tblo10, tblo11, tblo12, 
-               tblo13, tblo14, tblo15, tblo16)
-
-for( i in seq_along(tblolist))
-{
-    RP[i]<-list(c((tblolist[[i]][4]/(tblolist[[i]][2]+tblolist[[i]][3]))/
-                  (tblolist[[i]][3]/(tblolist[[i]][1]+tblolist[[i]][3])), NA))
-}
-
-RP<-sapply(RP, cbind, simplify = TRUE)[1:32]
-RP[c(29,31)]<-NA #Se elimina pues no interesa para esta variable#
-
 #Coeficiente de correlación tetracórica#
 
 CCT<-sapply(tblolist, tetrachoric)[1,]
@@ -592,7 +598,6 @@ df<-data.frame(
     CC=accounting(sqrt(2)*chistat),
     Probabilidad=accounting(chiprob),
     Independencia=ifelse(chiprob<0.05, TRUE, FALSE),
-    RP=accounting(RP),
     OR=accounting(OR)
     )
 
@@ -609,8 +614,6 @@ formattable(df, list(
                "span",style=x~style(color=ifelse(x, "red", "green")),
                x~icontext(ifelse(x, "remove", "ok"), ifelse(x, "No", "Si"))
                ),
-    RP=formatter(
-                  "span", x~ifelse(is.na(x)==TRUE, "", round(x, 2))),
     OR=formatter(
                   "span", x~ifelse(is.na(x)==TRUE, "", round(x, 2)))
                  )
@@ -623,7 +626,7 @@ El siguiente paso es generar los diagramas de cuadrantes para cada una de las va
 
 ```{r, echo=FALSE, results='hide'}
 par(mfrow=c(1,2))
-lapply(tblolist[c(1:5,7,9:11,16)], fourfoldplot, conf.level=0.95)
+lapply(tblolist, fourfoldplot, conf.level=0.95)
 ```
 
 Por último, resulta interesante ver también gráficamente las correlaciones más altas (en valor absoluto) y la más baja.
@@ -640,16 +643,23 @@ for(i in c(1:3,12))
 }
 ```
 
-Los resultados anteriores parecen indicar que las variables que serán más relevantes para predecir la parasitosis son el tipo de vivienda y el material de las paredes, pues estas dos variables presentan las correlaciones más altas, además de mostrar falta de independencia con la variable de respuesta y, además, las asociaciones correspondientes también son las más altas. El piso de la casa también presenta una correlación alta y negativa con la parasitosis y a su vez son independientes entre ellas. Otras variables que podrían mostrar un aporte, aunque en menor medida que las dos primeras son el sexo del padre y los miembros de la familia bajo el mismo techo.      
+Los resultados anteriores parecen indicar que las variables que serán más relevantes para modelar la parasitosis son el tipo de vivienda y el material de las paredes, pues estas dos variables presentan las correlaciones más altas, además de mostrar falta de independencia con la variable de respuesta y, además, las asociaciones correspondientes también son las más altas. Todas las demás variables muestran independencia con la parasitosis y coeficientes de contingencia muy bajos, aunque algunas muestran un coeficiente de correlación tetracórica con una agnitud un poco mayor comparada con los demás, este es el caso del techo de la casa, el piso y el agua entubada hasta el hogar.
 
 ##7. Predicción y modelado estadístico.     
 
-El análisis exploratorio brinda una idea de lo que se puede esperar en esta sección, sin embargo se iniciará trabajando con modelos saturados para confirmar las sospechas que se tenían de la sección anterior. Para esta parte se eliminarán los *NA* de la base de datos.            
+El análisis exploratorio brinda una idea de lo que se puede esperar en esta sección, sin embargo se iniciará trabajando con modelos saturados para confirmar las sospechas que se tenían de la sección anterior y, dependiendo de los resultados, se considerarán modelos que tomen en cuenta solamente las variables que mostraron un grado más alto de importancia en el análisis exploratorio. Para esta parte se eliminarán los *NA* de la base de datos.            
 
 Se trabajarán inicialmente tres modelos, dos logísticos y uno de Poisson, aunque dependiendo de los resultados obtenidos este número podría ampliarse.       
 
 ```{r}
 base<-na.omit(base)
+base<-mutate(base, vivienda=as.factor(vivienda),
+             paredes=as.factor(paredes), techo=as.factor(techo),
+             piso=as.factor(piso), agua=as.factor(agua),
+             entubada=as.factor(entubada), sanitario=as.factor(sanitario),
+             aprobado=as.factor(aprobado), trabajo=as.factor(trabajo),
+             sexo.padre=as.factor(sexo.padre), despara=as.factor(despara),
+             diarrea=as.factor(diarrea), cita=as.factor(cita))
 base
 ```
 
@@ -659,7 +669,7 @@ base
 Se trabajará un modelo logístico para predecir la parasitosis (en su forma binaria) en función de las distintas variables ya mencionadas. Se aniliza también de manera inicial la presencia de sobredispersión.            
 
 ```{r}
-modlog1<-glm(parasitosis~centro+api.daf+sexo+c.oms+c.ms+edad+vivienda+
+modlog1<-glm(parasitosis~api.daf+sexo+edad+vivienda+
                          paredes+techo+piso+agua+entubada+sanitario+
                          edad.padre+aprobado+trabajo+sexo.padre+
                          despara+diarrea+familia+cita, data=base,
@@ -667,30 +677,27 @@ modlog1<-glm(parasitosis~centro+api.daf+sexo+c.oms+c.ms+edad+vivienda+
 summary(modlog1)
 ```
 
-No hay indicios de sobredispersión pues su parámetro de dispersión es *1.03*, por lo que se puede asumir un modelo logístico clásico.       
+No hay indicios de sobredispersión pues su parámetro de dispersión es *1.05*, por lo que se puede asumir un modelo logístico clásico.       
 
 ```{r}
-modlog1<-glm(parasitosis~centro+api.daf+sexo+c.oms+c.ms+edad+vivienda+
+modlog1<-glm(parasitosis~api.daf+sexo+edad+vivienda+
                          paredes+techo+piso+agua+entubada+sanitario+
                          edad.padre+aprobado+trabajo+sexo.padre+
                          despara+diarrea+familia+cita, data=base,
                          family=binomial(link="logit"))
 ```
 
-Al tratarse de un modelo binomial, puede decirse que se conoce su variancia, por lo que una prueba chi-cuadrada es ideal para analizar cuales coeficientes son significativamente distintos de cero en este modelo.       
+Al tratarse de un modelo binomial, puede decirse que se conoce su variancia, por lo que una prueba de razón de verosimilitud es ideal para analizar cuales coeficientes son significativamente distintos de cero en este modelo.       
 
 ```{r}
 drop1(modlog1, test="LRT")
 ```
 
-Con excepción del Centro, nada resulta significativo, así que se probará un modelo únicamente con las variables socioeconómicas:       
+Con excepción del material de las paredes, el techo de la casa, el último año aprobado por el padre y los miembros de la familia bajo el mismo techo (aunque su zona de rechazo está al borde del límite de tolerancia), nada resulta significativo, así que se probará un modelo únicamente estas variables y con las sugeridas por el análisis exploratorio:       
 
 ```{r}
-modlog1<-glm(parasitosis~centro+edad+vivienda+
-                         paredes+techo+piso+agua+entubada+sanitario+
-                         edad.padre+aprobado+trabajo+sexo.padre+
-                         despara+diarrea+familia+cita, data=base,
-                         family=binomial(link="logit"))
-drop1(modlog1, test="Chisq")
+modlog1<-glm(parasitosis~vivienda+paredes+techo+aprobado+familia, data=base,
+             family=binomial(link="logit"))
+drop1(modlog1, test="LRT")
 ```
 
