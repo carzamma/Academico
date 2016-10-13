@@ -1,0 +1,353 @@
+---
+title:  'Modelos de Poisson: Magnitud del factor de dispersión y su efecto en la estimación de intervalos de confianza'
+thanks: "Replication files are available on the author's Github account..."
+author:
+- Gamboa, C.
+- Martínez, L.
+- Zamora, C.
+date: "`r format(Sys.time(), '%d %B %Y')`"
+tags: [nothing, nothingness]
+abstract: "Resumen del artículo"
+keywords: "poisson, overdispersion, r, regression, pearson"
+geometry: margin=1in
+bibliography: biblio.bib
+output: 
+    pdf_document:
+        template: NULL
+        toc: true
+        number_sections: true
+        toc_depth: 3
+        fig_width: 7
+        fig_height: 6
+        fig_caption: true
+        pandoc_args: ["-V", "classoption=twocolumn"]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Introducción.      
+
+Una de las distribuciones de probabilidad más utilizadas en la teoría de probabilidad es la distribución de Poisson[^1]. Se trata de distribución de probabilidad discreta que se adapta bien a problemas relacionados con conteos, o cuando un evento ocurre cierta cantidad de veces a lo largo del tiempo y tiene trabaja de mejor manera cuando se estudian sucesos cuyas probabilidades son pequeñas, es decir, eventos poco frecuentes. Esta distribución cuenta con un único parámetro, al cual llamaremos $\lambda$, que representa la media.     
+
+[^1]: Ver Wackerly pp 131.      
+
+Al trabajar con modelos estadísticos basados en la distribución de Poisson, se deben cumplir una serie de supuestos pero quizá el más importante sea el que se relaciona sus momentos, en particular su media y su variancia, pues en el caso de la distribución de Poisson, ambas deben ser iguales. Es por esto que gran parte de los errores de especificación de un determinado modelo conllevan una violación de este supuesto fundamental: la igualdad entre media y variancia condicionales.             
+
+Cuando los datos provienen de una distribución donde la media es menor a la variancia, y se quiere asumir una distribución Poisson, se está ante un problema de sobredispersión. El problema de la sobredispersión es más una consecuencia de la falta de equidispersión. La mayor parte de las pruebas que diagnostican la sobredispersión pueden considerarse algo genéricas en el sentido de que en realidad detectan la ausencia de equidispersión y no específicamente la presencia de sobredispersión.        
+
+Este último es el principal motivo por el cual se quiere realizar este estudio. Mediante este trabajo, se pretende estudiar las correcciones que se hacen a los errores estándar de los coeficientes de un modelo de regresión de Poisson, mediante el uso del parámetro de dispersión[^2], con el fin de conocer a partir de qué punto se puede considerar que este parámetro $(\phi)$ es lo suficientemente grande como para tener que trabajar con un modelo de regresión quasipoisson dado que se desconoce un criterio el cual indique a partir de qué punto la sobredispersión (medida mediante $\phi$) puede generar diferencias relevantes en los errores.               
+
+[^2]: Este parámetro se calcula mediante el uso de los residuales de Pearson.
+
+Mediante el uso de simulaciones, se obtendrán diversos parámetros de dispersión para distintos tamaños de muestra. Esto brindará la posibilidad de generar intervalos de confianza y compararlos entre sí para detectar a partir de qué punto la sobredispersión diagnosticada genera diferencias considerablemente importantes en las estimaciones entre los distintos modelos, con el fin de explorar el efecto que tiene la sobredispersión sobre las estimaciones de los intervalos de confianza en los modelos.        
+
+##Objetivos.        
+
+*   **Objetivo general.**       
+
+Brindar un criterio para clasificar la relevancia de la sobredispersión en un modelo de Poisson (medida mediante el factor de dispersión) mediante la magnitud de $\phi$.       
+
+*   **Objetivos específicos.**      
+    +   Generar una función en el software estadístico R[^3] para obtener datos de una distribución de Poisson con presencia de sobredispersión.       
+    +   Objetivo específico 2       
+
+[^3]: [https://www.r-project.org/](https://www.r-project.org/)
+
+#Metodología.       
+
+La distribución de Poisson forma parte de la familia exponencial, por lo que guarda una estrecha relación con varias distribucionesde probabilidad, como lo son la Gamma, la Exponencial o la Binomial Negativa, siendo esta última de particular interés en este estudio, como se mencionará más adelante.        
+
+Es importante conocer algunos aspectos de la distribución de Poisson, como su función de densidad y su función generadora de momentos, dado que con ambas se pueden encontrar los momentos relacionados con la esperanza y la variancia:       
+
+$$P(X=x| \lambda)=\frac{e^{-\lambda}\cdot \lambda^x}{x!}$$        
+
+$$E(e^{tX})=\sum_{x=0}^{\inf} {e^{tk}\cdot f(x; \lambda)}=
+\sum_{x=0}^{\inf} e^{tk}\frac{e^{-\lambda}\cdot \lambda^x}{x!}=e^{\lambda(e^t-1)}$$
+
+$$E(X)=\lambda ; Var(X)=\lambda$$
+
+Donde $k$ es el número de veces que ocurre el evento, $\lambda$ es un parámetro positivo que representa la media de veces que ocurre el evento y $e$ es la base del logaritmo natural.
+
+Interesa entonces obtener una muestra aleatoria de números de una distribución de Poisson para los cuales el valor de su media sea menor al de su variancia, es decir, datos con sobredispersión. Para poder lograr esto, es importante primero introducir otra distribución perteneciente a la familia exponencial, la distribución Binomial Negativa. Se presentan a continuación su función de densidad, su generadora de momentos, su esperanza matemática y su variancia.      
+
+$$P(X=x|k,\lambda)=\frac{\Gamma(x+k)}{\Gamma(k)\Gamma(x+1)}\left(\frac{k}{\lambda+k}\right)^k\left(1-\frac{k}{\lambda+k}\right)^y$$
+
+$$\left(\frac{x}{1-(1-x)e^t}\right)^k$$
+
+$$E(X)=\lambda ; Var(X)=\lambda+\frac{\lambda^2}{k}$$
+
+Note que, si se tiene una distribución Binomial Negativa cuyo parámetro $k$ tiende a infinito, entonces la distribución se vuelve una distribución de Poisson. Dado que la razón de este estudio es el parámetro de dispersión $(\phi)$ se observa la estrecha relación que tienen la distribución de Poisson y la Binomial Negativa, por lo que es de particular interés conocer la relación existente entre $\phi$, que es una constante de proporcionalidad y el parámetro $k$.      
+
+Cuando existe sobredispersión en una distribución de Poisson, los errores estándar quedan multiplicados por $\phi$, esto con el fin de controlar el error que se está generando. Así, si $\phi=1$ se estaría trabajando con una distribución de Poisson, pero cuando esto no sucede, se trabajaría con un modelo Quasipoisson[^4], el cual está basado es estimaciones vía quasiverosimilitud.        
+
+[^4]: Buscar referencia de Quasipoisson.        
+
+Puede decirse entonces que la variancia de una distribución de Poisson está dada por $Var(X)=\phi\lambda$, y al asociar esta variancia con la de la distribución Binomial Negativa es posible encontrar una relación entre $\phi$ y $k$ como sigue:      
+
+$$\phi\lambda=\lambda+\frac{\lambda^2}{k}$$
+$$\Leftrightarrow \phi=1+\frac{\lambda}{k}$$
+$$\Leftrightarrow k=\frac{\lambda}{\phi-1}$$
+
+Al definir esta relación es posible obtener un valor de $k$ que permita generar números pseudoaleatorios de una distribución Binomial Negativa con media $\lambda$, que a su vez son números pseudoaleatorios de una distribución de Poisson con media $\lambda$ y que están aproximados a una determinada dispersión $\phi$.      
+
+Al conocer las condiciones que se deben cumplir, es posible utilizar el software estadístico R para generar una función[^5] brinde los datos simulados adecuados. Como los coeficientes no son de particular interés en este estudio se plantea un escenario básico pero que puede ser fácilmente modificado: se definirá un único predictor llamado $x$ con el cual se creará un modelo lineal generalizado en conjunto con una variable de respuesta $y$, que serán los números pseudoaleatorios de la distribución de Poisson con sobredispersión.              
+[^5]: Ver anexos para más información del código empleado.
+
+Para poder analizar las diferencias que genera la consideración u omisión del factor de dispersión se considerarán dos etapas:
+
+*   **Comparación de errores estándar.**        
+
+Como método de comparación se estimarán los errores estándar de un modelo lineal generalizado mediante bootstrap[^6], tanto para el modelo Poisso como el Quasipoisson; estos errores serán comparados contra los generados por los modelos lineales generalizados clásicos de Poisson y de Quasipoisson.       
+
+[^6]: Buscar referencia de boostrap
+
+*   **Comparación de la potencia de la prueba.**        
+
+Para cada modelo (basado en Poisson o Quasipoisson), se aplicará la siguiente prueba de hipótesis.        
+
+$$H_0:\beta_1=0$$       
+
+Esta prueba brinda un panorama general de cuántas veces, por ejemplo, un intervalo de confianza para la media contenga un valor de uno, lo cual no permite definir si realmente existen diferencias en este parámetro. Al considerar el factor de dispersión, los errores estándar se multiplican por este, lo que hace más anchos los intervalos y es más posible incluir este valor; es decir, considerar una distribución de Poisson que no detecta este valor posiblemente se debe a que es muy angosto e inadecuado, mientras que un intervalo considerando un modelo Quasipoisson será más ancho, por lo que será más fácil de detectar. Al hacer esta prueba de hipótesis, se cuantificarán las veces que esta prueba se rechaza y se calculará la proporción de veces que este envento sucede. Se esperaría que la proporción de rechazos considerando un modelo de Poisson sea mayor que al considerar un modelo Quasipoisson, pues en el primero es más sencillo rechazar la hipótesis dado que el intervalo es más angosto, esto haría que la potencia sea más baja pues para que ésta aumente, el valor de esta proporción de rechazos debe ser lo más pequeña posible. Se utilizará una significancia del 5% para esta prueba.        
+
+#Resultados.        
+
+Conviene realizar un análisis gráfico para poder visualizar de manera más simple lo que ocurre con los errores estándar y la proporción de rechazos en la prueba de hipótesis $H_0:\beta_1=0$ con respecto al factor de dispersión para cada tamaño de muestra y también de manera general.        
+
+Antes de analizar la potencia, se comparan los resultados los errores estándar de un modelo regresión de Poisson estimado mediante bootstrap (*MRPB*) empleando 1000 remuestreos contra los errores estándar de un modelo de regresión de Poisson estimado vía máxima verosimilitud (*MRP*) y los de un modelo de regresión Quasipoisson estimado vía quasi-verosimilitud (*MRQ*). Los datos para estos modelos se generaron mediante una función de R basada en la distribución binomial negativa[^7] considerando los siguientes tamaños de muestra (*n*) y valores de $\phi$:     
+
+[^7]: Ver sección de Metodología y anexos para más detalles.
+
+$$n \in \{20,40,60,80,100\}$$
+$$\phi \in \{1.1, 1.2, 1.3, \cdots, 3.8, 3.9, 4.0\}$$
+
+Al obtener los datos se generan los modelos mencionados, siendo el *MRPB* el que contiene el error estándar *"correcto"* que servirá como punto de comparación. Se calculan las diferencias en valor absoluto del error estándar del *MRPB* con los errores estándar de *MRP* y *MRQ* (*diferencias individuales*); a su vez de estos valores se calcula la diferencia en valor absoluto de ambos (*diferencia global*).        
+
+##Errores estándar estimados mediante bootstrap.
+
+Primero se analiza de manera gráfica la diferencia global.
+
+```{r, echo=FALSE}
+load("Final Environment.RData")
+library(ggplot2)
+ggplot(datpoiss, aes(phihat, difb1))+
+geom_point(col="blue")+
+labs(title="Gráfico 1\nDiferencia global del error estándar con respecto al factor de dispersión", 
+     x=expression(paste(phi)),
+     y="Diferencia")
+```
+
+```{r, echo=FALSE, results='hide'}
+tabla<-function(d,data, cd, c1, c2)
+{
+    tab<-NULL
+    j<-1
+    for(i in d)
+    {
+        dat<-filter(data, data[, cd]<=i)
+        dat<-as.matrix(dat)
+        tab[[j]]<-t(sapply(tapply(dat[, c1], 
+                                  dat[, c2], 
+                                  quantile,
+                                  probs=c(2.5/100, 97.5/100)),round, 2))
+        j<-j+1
+    }
+    names(tab)<-paste(d)
+    tab
+}
+
+tabla(.01, datpoiss, 9, 3, 1)
+```
+
+\begin{table}[ht]
+\centering
+\caption{Percentiles del parámetro de dispersión con diferencia global menor o igual a 0.01 para cada tamaño de muestra} 
+\begin{tabular}{rrr}
+  \hline
+  & \multicolumn{2}{c}{Percentiles} \\
+ Muestra & 2.5 & 97.5 \\
+ \hline
+20 & 1.06 & 1.32 \\ 
+  40 & 0.91 & 1.38 \\ 
+  60 & 1.23 & 1.38 \\ 
+  80 & 1.11 & 1.49 \\ 
+  100 & 1.12 & 1.63 \\ 
+   \hline
+\end{tabular}
+\end{table}     
+
+A medida que aumenta el factor de dispersión, la diferencia global se vuelve cada vez más grande y además el valor de $\phi$ que contiene el 97.5% de las diferencias globales menores a *0.01* aumenta conforme aumenta el tamaño de muestra, pero el valor de $\phi$ no parece llegar a dos, a pesar de tener una muestra relativamente grande (*100*). Dicho esto, resulta interesante comparar las diferencias globales para cada tamaño de muestra.       
+
+```{r, echo=FALSE}
+ggplot(datpoiss, aes(phihat, difb1, col="red"))+
+geom_point(col="blue")+
+facet_grid(.~n)+
+labs(title="Gráfico 2\nDiferencia global del error estándar con respecto al factor de dispersión para cada tamaño de muestra", 
+     x=expression(paste(phi)),
+     y="Diferencia")
+```
+
+El gráfico 2, además de dar una confirmación visual de lo mencionado anteriormente muestra que, conforme aumenta el tamaño de muestra, la diferencia global del error estándar disminuye gradualmete, lo cual podría ser un indicador de que mientras mayor sea el tamaño de muestra menor será la diferencia global, por lo que usar un modelo estimado por máxima verosimilitud o uno por quasi-verosimilitud brindaría resultados muy similares.       
+
+De igual forma, para el *MRPB* se comparan visualmente las diferencias individuales para cada tamaño de muestra identificando el *MRP* y el *MRQ*.     
+
+```{r, echo=FALSE}
+ggplot(data.frame(datpoiss), aes(phihat, deeb1p, col="red"))+
+    geom_point()+
+    geom_point(aes(phihat, deeb1q,col="blue"))+
+    facet_grid(.~n)+
+    labs(title="Gráfico 3\nDiferencias individuales del error estándar de un MRPB contra MRP y MRQ\nsegún el factor de dispersión para cada tamaño de muestra", 
+         x=expression(paste(phi)),
+         y="Diferencia", 
+         color="Modelo\n")+
+    scale_color_manual(labels=c("Quasipoisson", "Poisson"), 
+                       values=c("blue", "red"))
+```
+
+El gráfico 3 muestra claramente que las diferencias del error estándar del *MRP* con el *MRPB* son considerablemente mayores que las que presenta el *MRQ*. En el gráfico 2 se observó como a medida que aumenta el tamaño de muestra la diferencia global disminuye, ahora el gráfico 3 muestra el por qué de esta situación: El *MRQ* siempre presenta diferencias individuales pequeñas, mientras que el *MRQ* se va reduciendo, es decir, los resultados de  máxima verosimilitud se van aproximando a los de quasi-verosimilitud, y no a la inversa.        
+
+Los resultados son análogos al usar como comparación los errores estándar de un modelo de regresión quasipoisson estimado mediante bootstrap con una leve excepción en la tabla 2; los resultados se muestran gráficos 4, 5 y 6.     
+
+```{r, echo=FALSE}
+ggplot(datquasi, aes(phihat, difb1))+
+    geom_point(col="blue")+
+    labs(title="Gráfico 4\nDiferencia global del error estándar con respecto al factor de dispersión", 
+         x=expression(paste(phi)),
+         y="Diferencia")
+
+ggplot(datquasi, aes(phihat, difb1, col="red"))+
+    geom_point(col="blue")+
+    facet_grid(.~n)+
+    labs(title="Gráfico 5\nDiferencia global del error estándar con respecto al factor de dispersión para cada tamaño de muestra", 
+         x=expression(paste(phi)),
+         y="Diferencia")
+
+ggplot(data.frame(datquasi), aes(phihat, deeb1p, col="red"))+
+    geom_point()+
+    geom_point(aes(phihat, deeb1q,col="blue"))+
+    facet_grid(.~n)+
+    labs(title="Gráfico 6\nDiferencias individuales del error estándar de un MRPB contra MRP y MRQ\nsegún el factor de dispersión para cada tamaño de muestra", 
+         x=expression(paste(phi)),
+         y="Diferencia", 
+         color="Modelo\n")+
+scale_color_manual(labels=c("Quasipoisson", "Poisson"), 
+                   values=c("blue", "red"))
+library(xtable)
+```
+
+\begin{table}[ht]
+\centering
+\caption{Percentiles del parámetro de dispersión con diferencia global menor o igual a 0.01 para cada tamaño de muestra} 
+\begin{tabular}{rrr}
+  \hline
+  & \multicolumn{2}{c}{Percentiles} \\
+ Muestra & 2.5 & 97.5 \\
+ \hline
+20 & 1.08 & 1.15 \\ 
+  40 & 0.88 & 1.28 \\ 
+  60 & 1.16 & 1.37 \\ 
+  80 & 1.18 & 1.37 \\ 
+  100 & 1.13 & 1.30 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+##Potencia de la prueba entre modelos.
+
+Primero se observa de manera gráfica las diferencias en las proporciones de rechazo de un modelo que asume una distribución de Poisson ($\phi=1$) contra un modelo Quasipoisson ($\phi>1)$; esto se hace para cada tamaño de muestra simulado.     
+
+```{r, echo=FALSE}
+ggplot(pot, aes(Phi, Dif))+
+geom_point(col="blue")+
+geom_smooth(method="lm", se=FALSE)+
+facet_grid(.~Muestra)+
+labs(title="Gráfico 7\nDiferencia en la proporción de rechazos de la hipótesis nula para la familia\ndel modelo según el tamaño de muestra de la simulación\n", 
+     x=expression(paste(phi)),
+     y="Diferencia de proporción")
+```
+
+El gráfico 7 muestra una clara tendencia ascendente de la diferencia entre porporciones conforme aumenta el valor de $\phi$, esto es, mientras mayor sea el factor de dispersión mayor será la diferencia en la proporción de rechazos en la prueba de hipótesis, llegando a tener diferencias mayores a un 30% cuando se asume un modelo de Poisson cuando en realidad debía considerarse un modelo Quasipoisson, o lo que es lo mismo, no considerar un factor de dispersión relativamente alto cuando en realidad debía incluírse puede generar diferencias de hasta un 30% en la potencia de la prueba.        
+
+Dicho esto, interesa ahora ver en donde se encuentran estas diferencias con respecto al factor de dispersión. Para poder visualizar esta situación se graficarán las proporciones de rechazo de la prueba de hipótesis contra el factor de dispersión para cada tamaño de muestra, dependiendo del modelo utilizado (Poisson o Quasipoisson).        
+
+```{r, echo=FALSE}
+ggplot(pot, aes(Phi, PPoisson, col="red"))+
+geom_point()+
+geom_point(aes(Phi, PQuasi,col="blue"))+
+facet_grid(.~Muestra)+
+labs(title="Gráfico 8\nProporción de rechazos de la hipótesis nula para cada\ndel modelo según el tamaño de muestra de la simulación\n", 
+     x=expression(paste(phi)),
+     y="Proporción de rechazos", 
+     color="Modelo\n")+
+     scale_color_manual(labels=c("Quasipoisson", "Poisson"), 
+                        values=c("blue", "red"))
+```
+
+El gráfico 8 muestra claramente cómo la porporción de rechazos es considerablemente menor cuando se considera el factor de dispersión (Quasipoisson).          
+
+El análisis gráfico indica que una buena perspectiva de análisis es comparar distintos valores de las diferencias en las proporciones de rechazo de la prueba para los distintos tamaños de muestra.     
+
+\begin{table}[ht]
+\centering
+\caption{Percentiles del parámetro de dispersión con diferencia de proporciones menor igual a 0.025 para cada tamaño de muestra} 
+\begin{tabular}{rrr}
+  \hline
+  & \multicolumn{2}{c}{Percentiles} \\
+ Muestra & 2.5 & 97.5 \\
+ \hline
+20 & 1.08 & 1.15 \\ 
+  40 & 0.88 & 1.28 \\ 
+  60 & 1.16 & 1.37 \\ 
+  80 & 1.18 & 1.37 \\ 
+  100 & 1.13 & 1.30 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Percentiles del parámetro de dispersión con diferencia de proporciones menor igual a 0.05 para cada tamaño de muestra} 
+\begin{tabular}{rrr}
+  \hline
+  & \multicolumn{2}{c}{Percentiles} \\
+ Muestra & 2.5 & 97.5 \\
+ \hline
+20 & 1.31 & 1.56 \\ 
+  40 & 0.94 & 1.71 \\ 
+  60 & 1.07 & 1.45 \\ 
+  80 & 1.08 & 1.57 \\ 
+  100 & 1.20 & 1.66 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Percentiles del parámetro de dispersión con diferencia de proporciones menor igual a 0.1 para cada tamaño de muestra} 
+\begin{tabular}{rrr}
+  \hline
+  & \multicolumn{2}{c}{Percentiles} \\
+ Muestra & 2.5 & 97.5 \\
+ \hline
+20 & 1.02 & 3.10 \\ 
+  40 & 0.95 & 1.97 \\ 
+  60 & 1.07 & 1.75 \\ 
+  80 & 1.09 & 2.51 \\ 
+  100 & 1.20 & 2.29 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+#Conclusiones.        
+
+En términos generales, se recomienda utilizar siempre el factor de dispersión, ya que los resultados suele diferir cuando esta constante de proporcionalidad no es considerada, incluso en casos es que este valor parece ser bajo. Sin embargo, como el objetivo principal de esta investigación es brindar un punto de corte que sirva para definir cuando es adecuado utilizar un modelo Quasipoisson y cuándo este brinda casi los mismos resultados que un modelo de Poisson, se deben considerar los dos ejes de la sección de resultados:      
+
+*   **Errores estándar.**       
+
+Al comparar un error estándar simulado mediante bootstrap contra los errores estándar de los modelos clásicos (*MRP* y *MRQ*), un valor recomendado como punto de corte es $\phi=1.3$, pues de acuerdo con la tabla 1 y los gráficos del 1 al 3, alrededor de este valor las diferencias entre los errores estándar difieren en 0.01, o incluso menos.      
+
+*   **Potencia de la prueba.**      
+
+Para tener una alta potencia de la prueba, la proporción de rechazos de $H_0$ debe ser lo más pequeña posible, por ende, lo ideal sería que la diferencia entre proporciones también sea pequeña, para que la potencia sea similar en ambos casos. Así las cosas, una diferencia de 0.025 entre porporciones puede considerarse pequeña, por lo que con $\phi=1.2$ esta diferencia se tendrá aproximadamente en el 97.5% de los casos.       
+
+Como conclusión final se recomienda que si $\phi \in [1,1.1[$ entonces utilizar un modelo de Poisson es adecuado. Si $\phi \in [1.1,1.3]$ se aconseja realizar simulaciones adecuadas para el conjunto de datos particular con que se esté trabajando para formar un criterio de si las posibles diferencias generadas son tolerables en el contexto de investigación. Finalmente, si $\phi>1.3$ es más recomendable utilizar la estimación del modelo de regresión de Poisson vía quasi-verosimilitud o bien, hacer las simulaciones correspondientes para analizar más a profundidad las posibles diferencias generadas.      
